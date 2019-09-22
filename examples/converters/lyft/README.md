@@ -1,6 +1,6 @@
-### nuTonomy XVIZ Conversion Example
+### Lyft Conversion Example
 
-This nuTonomy data set is used to demonstrate how to convert data into the XVIZ format.
+This Lyft data set is used to convert data into the XVIZ format.
 
 The structure of this examples places the core conversion objects in `src/converters`.
 
@@ -12,20 +12,17 @@ at different rates.
 
 Follow the comments to get an understanding of the how's converting data to XVIZ.
 
-### nuTonomy Data Set
+### Lyft Data Set
 
-- [nuTonomy dataset](https://www.nuscenes.org/download)
-- [python lib](https://github.com/nutonomy/nuscenes-devkit/tree/master/python-sdk)
-- [Jupyter notebook](https://github.com/nutonomy/nuscenes-devkit/blob/master/python-sdk/tutorial.ipynb)
+- [Lyft 3D dataset from Kaggle](https://www.kaggle.com/c/3d-object-detection-for-autonomous-vehicles)
 
-### Download nuTonomy Data
+### Download Lyft Data
 
-1. Go to **[nuTonomy dataset](https://www.nuscenes.org/download)**
-2. Download `Meta data and annotations`, `LIDAR and RADAR pointclouds used as keyframes`,
-   `Camera images used as keyframes`
-3. Extract three archives and put them under directory `data` of root.
+1. Go to **[Lyft dataset @ Kaggle](https://www.kaggle.com/c/3d-object-detection-for-autonomous-vehicles/data)**
+2. Download all files related with train_* 
+3. Extract all archives and put them under directory `data` of root.
 
-## Transform nuTonomy to XVIZ format
+## Transform lyft to XVIZ format
 
 e.g load `scene-0006`
 
