@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 yarn start \
--d /Volumes/OSxexT/work/autoai/3d-object-detection-for-autonomous-vehicles/train_data \
---samples-directory=/Volumes/OSxexT/work/autoai/3d-object-detection-for-autonomous-vehicles/imgaes \
--o /Users/avkashchauhan/master/2019/self-driving/lyft-kaggle \
+-d /Volumes/OSxexT/work/autoai/3d-object-detection-for-autonomous-vehicles/inputdata/v1.0 \
+--samples-directory=/Volumes/OSxexT/work/autoai/3d-object-detection-for-autonomous-vehicles/samples \
+-o /Users/avkashchauhan/master/2019/self-driving/lyft-kaggle-out \
 --scenes=host-a101-lidar0-1241893239199111666-1241893264098084346 

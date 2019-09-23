@@ -52,14 +52,18 @@ export default class NuTonomyConverter {
 
   load() {
     // each loader depend on the previous loaders
+    console.log("Calling..... [_loadFrames]")
     this._loadFrames();
+    console.log("Calling..... [_loadFramesData]")
     this._loadFramesData();
+    console.log("Calling..... [_loadSensorCalibrations]")
     this._loadSensorCalibrations();
   }
 
   initialize() {
     this.load();
 
+    console.log("Calling createDir....")
     createDir(this.outputDir);
 
     // These are the converters for the various data sources.
@@ -67,7 +71,9 @@ export default class NuTonomyConverter {
     // requires coordination with another data source.
     const gpsConverter = new GPSConverter(this.inputDir, 'ego_pose.json');
     const objectConverter = new ObjectsConverter(this.inputDir, 'sample_annotation.json');
-    const lidarConverter = new LidarConverter(this.samplesDir, 'LIDAR_TOP');
+    //ASC
+    //const lidarConverter = new LidarConverter(this.samplesDir, 'LIDAR_TOP');
+    const lidarConverter = new LidarConverter(this.samplesDir, 'lidar');
     const cameraConverter = new CameraConverter(this.samplesDir, {
       disabledStreams: this.disabledStreams,
       imageMaxWidth: this.imageMaxWidth,
@@ -177,7 +183,9 @@ export default class NuTonomyConverter {
 
     // sample of first frame
     let sample = Object.values(sampleDataByToken).find(
-      data => data.sample_token === firstSampleToken && data.filename.indexOf('LIDAR_TOP') !== -1
+      //ASC
+      //data => data.sample_token === firstSampleToken && data.filename.indexOf('LIDAR_TOP') !== -1
+      data => data.sample_token === firstSampleToken
     );
 
     // retrieve samples until next token is empty
@@ -202,12 +210,19 @@ export default class NuTonomyConverter {
     }
 
     this.timestamps = this.frames.map(frame => frame.timestamp / 1e6);
+    console.log("[this.frames] length: ", this.frames.length);
   }
 
   // lidar frame is synchronized with ego pose
   // use lidar frame's timestamp as the frame reference timestamp
   _getFrameSensors(frameIndex, sensorsMetadata) {
-    const lidar = sensorsMetadata.LIDAR_TOP[frameIndex];
+    console.log("_getFrameSensors::frameIndex: ", frameIndex)
+    console.log("_getFrameSensors::sensorsMetadata[frameIndex]: ", sensorsMetadata.LIDAR_FRONT_RIGHT[frameIndex]);
+    //ASC
+    //const lidar = sensorsMetadata.LIDAR_TOP[frameIndex];
+    const lidar = sensorsMetadata.LIDAR_FRONT_RIGHT[frameIndex];
+
+    console.log("lidar: ", lidar);
     const timestamp = lidar.timestamp;
     const sensors = {
       LIDAR_TOP: lidar
@@ -237,14 +252,25 @@ export default class NuTonomyConverter {
      *   ...
      * }
      */
-    const sensorsMetadata = {};
+    //const sensorsMetadata = {};
+    const sensorsMetadataLoc = {};
     const {sensors, sampleDataByToken} = this.staticData;
 
+    const listOfCodes = [];
+
     // 1 lidar, 6 cameras, 6 radars (radar data is not used)
-    const lidarSample = firstFrameData.find(data => data.filename.indexOf('LIDAR') !== -1);
-    const cameraSamples = firstFrameData.filter(data => data.filename.indexOf('CAM') !== -1);
+    //ASC
+    //const lidarSample = firstFrameData.find(data => data.filename.indexOf('LIDAR') !== -1);
+    const lidarSample = firstFrameData.filter(data => data.filename.indexOf('lidar') !== -1);
+    //ASC
+    //const cameraSamples = firstFrameData.filter(data => data.filename.indexOf('CAM') !== -1);
+    const cameraSamples = firstFrameData.filter(data => data.filename.indexOf('_cam') !== -1);
+
+    console.log("_loadCalibratedSensors::lidarSample = ", lidarSample.length);
+    console.log("_loadCalibratedSensors::cameraSamples = ", cameraSamples.length);
 
     [lidarSample, ...cameraSamples].forEach(sample => {
+      //console.log("_loadCalibratedSensors::sample[1] = ", sample);
       while (sample) {
         // if only convert keyframes
         // keyframe is 5-10 less frequent than frame sample
@@ -253,13 +279,29 @@ export default class NuTonomyConverter {
             sample = sampleDataByToken[sample.next];
           }
         }
+        //console.log("_loadCalibratedSensors::sample[2] = ", sample);
+        //ASC
+        if (sample.length > 1){
+          sample = sample[0];
+        }
+        //console.log("_loadCalibratedSensors::sample[3] = ", sample);
 
         if (sample) {
+          console.log("_loadCalibratedSensors::sample.calibrated_sensor_token = ", sample.calibrated_sensor_token);
           const sensor = sensors[sample.calibrated_sensor_token];
-          if (!sensorsMetadata[sensor.channel]) {
-            sensorsMetadata[sensor.channel] = [];
+          //console.log("_loadCalibratedSensors::sensor = ", sensor);
+          console.log("_loadCalibratedSensors::sensor.channel = ", sensor.channel);
+          //console.log("_loadCalibratedSensors::sensorsMetadataLoc = ", sensorsMetadataLoc);
+          console.log("_loadCalibratedSensors::sensorsMetadataLoc[sensor.channel] = ", !sensorsMetadataLoc[sensor.channel]);
+          if (!sensorsMetadataLoc[sensor.channel]) {
+            sensorsMetadataLoc[sensor.channel] = [];
           }
-          sensorsMetadata[sensor.channel].push({
+
+          if (listOfCodes.indexOf(sensor.channel) === -1 ){
+            listOfCodes.push(sensor.channel);
+          }
+          console.log("_loadCalibratedSensors::sensorsMetadataLoc[sensor.channel] = ", sensorsMetadataLoc[sensor.channel].length);
+          sensorsMetadataLoc[sensor.channel].push({
             timestamp: sample.timestamp,
             calibrated_sensor_token: sample.calibrated_sensor_token,
             filename: sample.filename,
@@ -273,8 +315,10 @@ export default class NuTonomyConverter {
         }
       }
     });
-
-    return sensorsMetadata;
+    //console.log("_loadCalibratedSensors::sensorsMetadataLoc length [EXIT] = ", sensorsMetadataLoc);
+    console.log("_loadCalibratedSensors::listOfCodes [EXIT] = ", listOfCodes.length);
+    console.log("_loadCalibratedSensors::listOfCodes [EXIT] = ", listOfCodes);
+    return sensorsMetadataLoc;
   }
 
   _loadSensorCalibrations() {
@@ -293,10 +337,15 @@ export default class NuTonomyConverter {
       data => data.sample_token === this.frames[0].sample_token
     );
 
+    //console.log("_loadFramesData::firstFrameData [LIST]", firstFrameData);
+    console.log("_loadFramesData::firstFrameData = ", firstFrameData.length);
     const sensorsMetadata = this._loadCalibratedSensors(firstFrameData);
+    //console.log("_loadFramesData::sensorsMetadata: ", sensorsMetadata);
 
     this.frames.forEach((frame, i) => {
       // attach sensors for each frame
+
+      console.log("_loadFramesData::frame: ", frame);
       frame.sensors = this._getFrameSensors(i, sensorsMetadata);
       // use lidar data's ego_pose because
       // A sample is data collected at (approximately) the same timestamp as part of a single LIDAR sweep.

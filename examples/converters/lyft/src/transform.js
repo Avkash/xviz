@@ -35,7 +35,10 @@ module.exports = async function main(args) {
 
   const staticData = new StaticData(inputDir);
   for (const scene of scenes) {
-    const sceneName = `scene-${zeroPaddedPrefix(scene, 4)}`;
+    //ASC
+    //const sceneName = `scene-${zeroPaddedPrefix(scene, 4)}`;
+    console.log("Processing Lyft(3d) Scene: ", scene);
+    const sceneName = `${scene}`;
     const outputDir = `${args.outputDir}/${sceneName}`;
     // This object orchestrates any data dependencies between the data sources
     // and delegates to the individual converters
@@ -48,7 +51,7 @@ module.exports = async function main(args) {
       keyframes
     });
 
-    console.log(`Converting NuScenes data scene ${sceneName} at ${inputDir}`); // eslint-disable-line
+    console.log(`Converting Lyft(3d) Kaggle data scene ${sceneName} at ${inputDir}`); // eslint-disable-line
     console.log(`Saving to ${outputDir}`); // eslint-disable-line
 
     converter.initialize();

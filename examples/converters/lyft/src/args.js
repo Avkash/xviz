@@ -80,10 +80,17 @@ module.exports = function getArgs() {
   const inputDir = args.data_directory;
   const samplesDir = args.samples_directory;
   const outputDir = args.output || args.data_directory;
+  //
+  /*
   const scenes = args.scenes
     .split(',')
     .filter(Boolean)
     .map(n => Number(n));
+  */  
+  //  
+  const scenes = args.scenes
+    .split(',');
+  console.log("Scene(arg): ", scenes); // eslint-disable-line
   console.log(inputDir, outputDir); // eslint-disable-line
   const disabledStreams = args.disable_streams.split(',').filter(Boolean);
 
